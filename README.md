@@ -30,9 +30,9 @@
 
 ### List
 
-写出所有实验的相关信息, 包括实验名称, 实验开始时间, 实验结束时间.  
+列出所有实验的相关信息, 包括实验名称, 实验开始时间, 实验结束时间.  
 
-> url: /List  
+> url: /list  
 > Auth: True  
 > method: GET  
 > URL Query: None  
@@ -89,7 +89,7 @@
 
 ### Punch
 
-学生打卡签到, URL Query中需要带上token, 用于验证用户身份, 该token由二维码给出.
+学生打卡签到, URL Query中需要带上token, 用于验证用户身份, 该token由二维码给出.学生签到后, 数据库中Reservations表中对应的记录的Status字段会被置为2, 表示已签到.  
 
 > URL: /punch  
 > Auth: False  

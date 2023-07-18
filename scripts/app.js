@@ -1,14 +1,21 @@
-const http = require('http');
+const express = require('express');
+const config = require('./config');
+const handlers = require('./handlers');
+const utils = require('./utils');
 
-const hostname = '127.0.0.1';
-const port = 3000;
+var app = express();
 
-const server = http.createServer((req, res) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Hello World');
-});
+app.use(express.json());
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-});
+app.post('/login', handlers.login);
+app.get('/list', utils.authenticateToken, handlers.list);
+app.post('/reserve', utils.authenticateToken, handlers.reserve);
+app.post('/punch', handlers.punch);
+app.get('/genPunchToken', utils.authenticateToken, handlers.genPunchToken);
+app.post('/gradeSubmit', utils.authenticateToken, handlers.gradeSubmit);
+app.get('/queryScore', utils.authenticateToken, handlers.queryScore);
+
+
+var server = app.listen(config.server.port, function() {
+    console.log('Server listening on port ' + config.server.port);
+})
