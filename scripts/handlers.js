@@ -1,5 +1,6 @@
 const db = require('./database');
 const jwt = require('jsonwebtoken');
+const cfg = require('./config');
 
 // handler for the /login endpoint
 function handler_login(req, res) {
@@ -32,7 +33,7 @@ function handler_login(req, res) {
         // Generate a JWT token
         const token = jwt.sign(
             {username: username}, 
-            config.server.secretKey, 
+            cfg.config.server.secretKey, 
             {expiresIn: '1h'}
         );
 
@@ -65,7 +66,7 @@ exports.list = handler_list;
 // handler for the /reserve endpoint
 function handler_reserve(req, res) {
     const { lab, startTime, endTime } = req.body;
-    const user = req.user;
+    const user = req.user.username;
 
     const reservationTime = Math.round(Date.now() / 1000);
 
@@ -96,7 +97,7 @@ function handler_reserve(req, res) {
                 match_labName = true;
                 match_time = false;
                 if (record.StartTime <= startTime && record.EndTime >= endTime) {
-                    match_labName = true;
+                    match_time = true;
                     break;
                 }
             }
@@ -113,7 +114,7 @@ function handler_reserve(req, res) {
         }
 
         // Check if the user has already reserved the lab
-        const query = `SELECT * FROM Reservation WHERE Lab = '${lab}' AND User = '${user}'`;
+        const query = `SELECT * FROM Reservations WHERE Lab = '${lab}' AND User = '${user}'`;
         db.con.query(query, (err, result) => {
             if (err) {
                 res.status(500).json({ status: 'error', message: err.message });
@@ -140,7 +141,7 @@ function handler_reserve(req, res) {
                 Status: 1
             };
 
-            db.con.query('INSERT INTO Reservation SET ?', reservationData, (err, result) => {
+            db.con.query('INSERT INTO Reservations SET ?', reservationData, (err, result) => {
                 if (err) {
                     res.status(500).json({ status: 'error', message: err.message });
                     return;
@@ -160,14 +161,14 @@ function handler_punch(req, res) {
     const { lab, username, password } = req.body;
 
     // 验证lab是否对应
-    if (lab != req.lab) {
+    if (lab != req.lab.lab) {
         res.json({status: 'error', message: 'Invalid lab'});
         return;
     }
 
     // 验证用户名和密码是否正确
     // SQL query to retrieve the record with the specified username
-    const query = `SELECT * FROM users WHERE username = '${username}'`
+    const query = `SELECT * FROM User WHERE username = '${username}'`
 
     db.con.query(query, (err, result) => {
         if (err) {
@@ -191,7 +192,7 @@ function handler_punch(req, res) {
 
         // Change the status of the reservation to 2
         const currentTime = Math.round(Date.now() / 1000);
-        const query = `UPDATE Reservation SET Status = 2 WHERE Lab = '${lab}' AND User = '${username} AND StartTime <= '${currentTime}' AND EndTime > '${currentTime}'`;
+        const query = `UPDATE Reservations SET Status = 2 WHERE Lab = '${lab}' AND User = '${username}' AND StartTime <= ${currentTime} AND EndTime >= ${currentTime}`;
         db.con.query(query, (err, result) => {
             if (err) {
                 res.status(500).json({ status: 'error', message: err.message });
@@ -207,7 +208,7 @@ exports.punch = handler_punch;
 // handler for the /genPunchToken endpoint
 function handler_genPunchToken(req, res) {
     // TODO: Check if the user is an admin(used by teachers)
-    if (req.user != 'root') {
+    if (req.user.username != 'root') {
         res.json({status: 'error', message: 'Permission denied'});
         return;
     }
@@ -232,7 +233,7 @@ function handler_genPunchToken(req, res) {
         // Generate a JWT token
         const token = jwt.sign(
             {lab: req.query.lab}, 
-            config.server.secretKey, 
+            cfg.config.server.secretKey, 
             {expiresIn: '1h'}
         );
 
@@ -245,7 +246,7 @@ exports.genPunchToken = handler_genPunchToken;
 // handler for the /gradeSubmit endpoint
 function handler_gradeSubmit(req, res) {
     // TODO: Check if the user is an admin(used by teachers)
-    if (req.user != 'root') {
+    if (req.user.username != 'root') {
         res.json({status: 'error', message: 'Permission denied'});
         return;
     }
