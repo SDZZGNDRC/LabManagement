@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <h1>Login</h1>
+
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        
+        <input type="submit" value="Login">
+    </form>
+
+    <script>
+        function sha256(message) {
+            var hash = CryptoJS.SHA256(message);
+            return hash.toString(CryptoJS.enc.Hex);
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            var encryptedPassword = sha256(password);
+
+            var data = {
+                "username": username,
+                "password": encryptedPassword
+            };
+
+            // Send login request to the server
+            fetch("/lab/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                if (data.status === "success") {
+                    var token = data.token;
+
+                    // Save the token in local storage
+                    localStorage.setItem("token", token);
+
+                    // Redirect to the next page or perform any other actions
+                    
+                    window.location.href = "/home";
+                } else {
+                    alert("Login failed. Please try again.");
+                }
+            })
+            .catch(function(error) {
+                console.log(error);
+                alert("An error occurred. Please try again later.");
+            });
+        });
+    </script>
+</body>
+</html>
