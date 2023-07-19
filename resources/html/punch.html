@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>实验教学管理系统 - 学生签到</title>
+</head>
+<body>
+    <h1>学生签到</h1>
+    <label for="labInput">实验名称:</label>
+    <input type="text" id="labInput" placeholder="实验名称" /><br />
+    <label for="usernameInput">用户名:</label>
+    <input type="text" id="usernameInput" placeholder="用户名" /><br />
+    <label for="passwordInput">密码:</label>
+    <input type="password" id="passwordInput" placeholder="密码" /><br />
+    <button onclick="punchForAttendance()">签到</button>
+    <p id="responseMessage"></p>
+
+    <script>
+    function getPunchTokenFromURL() {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('token');
+    }
+
+    function punchForAttendance() {
+        var labName = document.getElementById("labInput").value;
+        var username = document.getElementById("usernameInput").value;
+        var password = document.getElementById("passwordInput").value;
+        var token = getPunchTokenFromURL();
+
+        var punchData = {
+        lab: labName,
+        username: username,
+        password: password
+        };
+
+        fetch(`/lab/punch?token=${token}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(punchData)
+        })
+        .then(function(response) {
+        return response.json();
+        })
+        .then(function(data) {
+        if (data.status === "success") {
+            document.getElementById("responseMessage").textContent = "签到成功！";
+        } else {
+            document.getElementById("responseMessage").textContent = "签到失败：" + data.message;
+        }
+        })
+        .catch(function(error) {
+        console.log(error);
+        });
+    }
+    </script>
+</body>
+</html>

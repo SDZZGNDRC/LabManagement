@@ -165,15 +165,7 @@
 > URL: /queryScore  
 > Auth: True  
 > method: GET  
-> URL Query: None  
-> Request Body:
-
-```json
-{
-    "username": "xxxx", 
-    "lab": "lab1"
-}
-```
+> URL Query: username=xxxx&lab=lab1  
 
 `username` field is optional, if not given, return all students' score of the lab; `lab` field is optional, if not given, return all labs' score of the student.
 > Respond Body:

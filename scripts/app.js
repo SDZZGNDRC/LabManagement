@@ -7,6 +7,27 @@ var app = express();
 
 app.use(express.json());
 
+app.get('/', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/login.html');
+});
+app.get('/home', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/home.html');
+});
+app.get('/reserve', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/reserve.html');
+});
+app.get('/genPunchToken', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/genPunchToken.html');
+}); 
+app.get('/punch', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/punch.html');
+});
+app.get('/gradeSubmit', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/gradeSubmit.html');
+});
+app.get('/queryScore', function(req, res) {
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/queryScore.html');
+});
 app.post('/lab/login', handlers.login);
 app.get('/lab/list', utils.authenticateToken, handlers.list);
 app.post('/lab/reserve', utils.authenticateToken, handlers.reserve);

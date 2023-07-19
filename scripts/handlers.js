@@ -2,6 +2,14 @@ const db = require('./database');
 const jwt = require('jsonwebtoken');
 const cfg = require('./config');
 
+// handler for the / endpoint
+function handler_home(req, res) {
+    // return the login.html page
+    res.sendFile('/home/ubuntu/project/LabManagement/resources/html/login.html');
+}
+
+exports.home = handler_home;
+
 // handler for the /login endpoint
 function handler_login(req, res) {
     username = req.body.username;
@@ -320,7 +328,7 @@ exports.gradeSubmit = handler_gradeSubmit;
 
 // handler for the /queryScore endpoint
 function handler_queryScore(req, res) {
-    const { username, lab } = req.body;
+    const { username, lab } = req.query;
     
     let query = 'SELECT * FROM Scores';
     let queryParams = [];
@@ -348,7 +356,7 @@ function handler_queryScore(req, res) {
                 score: row.Score
             }));
 
-            res.json({status: 'success', data: records});
+            res.json({status: 'success', records: records});
         }
     });
 }

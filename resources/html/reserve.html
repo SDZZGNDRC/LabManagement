@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            th, td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            button {
+                background-color: blue;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                cursor: pointer;
+            }
+        </style>
+        <title>实验教学管理系统 - 预约实验</title>
+    </head>
+    <body>
+        <a class="home-link" href="/home">返回首页</a>
+        <h1>预约实验</h1>
+    
+        <table id="experimentTable">
+            <tr>
+                <th>实验</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+        </table>
+
+        <script>
+            function formatTimestamp(timestamp) {
+                var date = new Date(timestamp * 1000); // Multiply by 1000 to convert from seconds to milliseconds
+                var formattedDate = date.toLocaleString();
+                return formattedDate;
+            }
+
+            function reserveExperiment(lab, startTime, endTime) {
+                var reserveData = {
+                    lab: lab,
+                    startTime: startTime,
+                    endTime: endTime
+                };
+
+                fetch("/lab/reserve", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    },
+                    body: JSON.stringify(reserveData)
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.status === "success") {
+                        alert("Experiment reserved successfully!");
+                    } else {
+                        alert("Failed to reserve experiment.");
+                        console.log(data.message);
+                    }
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
+            }
+
+            // Fetch experiment data from the /list API endpoint
+            fetch("/lab/list", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": localStorage.getItem("token")
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.status === "success") {
+                    var labs = data.labs;
+    
+                    // Create table rows dynamically based on the experiment data
+                    var table = document.getElementById("experimentTable");
+                    labs.forEach(function(lab) {
+                        var row = document.createElement("tr");
+    
+                        var nameCell = document.createElement("td");
+                        nameCell.textContent = lab.name;
+                        row.appendChild(nameCell);
+    
+                        var timeCell = document.createElement("td");
+                        timeCell.textContent = formatTimestamp(lab.startTime) + " - " + formatTimestamp(lab.endTime);
+                        row.appendChild(timeCell);
+    
+                        var actionCell = document.createElement("td");
+                        var reserveButton = document.createElement("button");
+                        reserveButton.textContent = "预约";
+                        reserveButton.addEventListener("click", function() {
+                            reserveExperiment(lab.name, lab.startTime, lab.endTime);
+                            reserveButton.disabled = true;
+                            reserveButton.textContent = "已预约";
+                        });
+                        actionCell.appendChild(reserveButton);
+                        row.appendChild(actionCell);
+    
+                        table.appendChild(row);
+                    });
+                } else {
+                    console.log("Failed to fetch experiment data.");
+                }   
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+        </script>
+    </body>
+</html>
