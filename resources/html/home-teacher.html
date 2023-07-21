@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .square-button {
+                width: 200px;
+                height: 200px;
+                background-color: rgb(43, 132, 255);
+                border: none;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                margin-left: 5px; 
+                margin-right: 5px; 
+                margin-bottom: 5px; 
+                margin-top: 5px; 
+            }
+        </style>
+        <title>实验教学管理系统 - 首页</title>
+    </head>
+
+    <body>
+
+        <h1 style="text-align: center;">欢迎来到实验教学管理系统！</h1>
+
+        <p>实验教学管理系统是一个基于Web的实验教学管理系统，它可以帮助教师和学生更好地进行实验教学。</p>
+        <div style="text-align:center">
+            <button class="square-button" onclick="location.href='/genPunchToken'">生成打卡二维码</button>
+            <button class="square-button" onclick="location.href='/gradeSubmit'">上传成绩</button>
+            <button class="square-button" onclick="location.href='/queryScore'">查询成绩</button>
+            <button class="square-button" onclick="location.href='/studentManage'">学生管理</button>
+            <button class="square-button" onclick="location.href='/labManage'">实验管理</button>
+        </div>
+    </body>
+</html>

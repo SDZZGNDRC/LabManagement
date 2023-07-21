@@ -6,17 +6,20 @@
 </head>
 <body>
     <a class="home-link" href="/home">返回首页</a>
-    <h1>成绩提交</h1>
-    <label for="labInput">实验名称:</label>
-    <input type="text" id="labInput" placeholder="实验名称" /><br />
-    <label for="usernameInput">用户名:</label>
-    <input type="text" id="usernameInput" placeholder="用户名" /><br />
-    <label for="scoreInput">成绩:</label>
-    <input type="number" id="scoreInput" placeholder="成绩" /><br />
-    <button onclick="submitGrade()">提交成绩</button>
-    <p id="responseMessage"></p>
+    <h1 style="text-align: center;">成绩提交</h1>
+    <div style="text-align: center;">
+        <label for="labInput">实验:</label>
+        <input type="text" id="labInput" /><br />
+        <label for="usernameInput">学号:</label>
+        <input type="text" id="usernameInput" /><br />
+        <label for="scoreInput">成绩:</label>
+        <input type="number" id="scoreInput" /><br />
+        <button onclick="submitGrade()">提交成绩</button>
+    </div>
+    <p id="responseMessage" style="text-align: center;"></p>
 
     <script>
+        // TODO: Render a table of all students and show if they have punched in or not
     function submitGrade() {
         var labName = document.getElementById("labInput").value;
         var username = document.getElementById("usernameInput").value;

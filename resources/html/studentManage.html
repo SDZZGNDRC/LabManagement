@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>实验教学管理系统 - 学生管理</title>
+    <style>
+        table {
+            margin: 0 auto;
+            text-align: center;
+        }
+        th, td {
+            padding: 20px;
+        }
+        .delete-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .add-student {
+            margin: 10px;
+            text-align: center;
+        }
+        .add-student input {
+            margin-right: 5px;
+        }
+        .add-button {
+            background-color: rgb(49, 49, 236);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <a class="home-link" href="/home">返回首页</a>
+    <h1 style="text-align: center;">学生管理</h1>
+    <div class="add-student">
+        <input type="text" id="username" placeholder="学号">
+        <input type="text" id="password" placeholder="密码">
+        <button class="add-button">添加</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>学号</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="student-table-body"></tbody>
+    </table>
+
+    <script>
+        // Function to fetch and populate the student table
+        function fetchStudents() {
+            fetch('/lab/listStudents', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": localStorage.getItem("token")
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const studentTableBody = document.getElementById('student-table-body');
+                    studentTableBody.innerHTML = '';
+
+                    data.students.forEach(student => {
+                        const row = document.createElement('tr');
+                        const usernameCell = document.createElement('td');
+                        usernameCell.textContent = student.username;
+                        row.appendChild(usernameCell);
+
+                        const actionCell = document.createElement('td');
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '删除';
+                        deleteButton.className = 'delete-button';
+                        deleteButton.addEventListener('click', () => deleteStudent(student.username));
+                        actionCell.appendChild(deleteButton);
+                        row.appendChild(actionCell);
+
+                        studentTableBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Function to add a new student
+        function addStudent() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // encrypt password using sha256
+            const encryptedPassword = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+
+            fetch('/lab/studentManage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    action: 'Add',
+                    username: username,
+                    password: encryptedPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchStudents();
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Function to delete a student
+        function deleteStudent(username) {
+            fetch('/lab/studentManage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    action: 'Delete',
+                    username: username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchStudents();
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Add event listener to add button
+        document.querySelector('.add-button').addEventListener('click', addStudent);
+
+        // Fetch students on page load
+        fetchStudents();
+    </script>
+</body>
+</html>

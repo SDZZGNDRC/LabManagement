@@ -14,19 +14,28 @@
                 border-bottom: 1px solid #ddd;
             }
             
-            button {
-                background-color: blue;
+            .reserve-button {
+                background-color: rgb(7, 224, 3);
                 color: white;
                 padding: 8px 16px;
                 border: none;
                 cursor: pointer;
+                width: 150px;
+            }
+            .reserved-button {
+                background-color: rgb(255, 71, 71);
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                cursor: pointer;
+                width: 150px;
             }
         </style>
         <title>实验教学管理系统 - 预约实验</title>
     </head>
     <body>
         <a class="home-link" href="/home">返回首页</a>
-        <h1>预约实验</h1>
+        <h1 style="text-align: center;">预约实验</h1>
     
         <table id="experimentTable">
             <tr>
@@ -63,9 +72,9 @@
                 })
                 .then(function(data) {
                     if (data.status === "success") {
-                        alert("Experiment reserved successfully!");
+                        alert("实验预约成功！");
                     } else {
-                        alert("Failed to reserve experiment.");
+                        alert("实验预约失败: " + data.message);
                         console.log(data.message);
                     }
                 })
@@ -104,10 +113,13 @@
     
                         var actionCell = document.createElement("td");
                         var reserveButton = document.createElement("button");
+                        reserveButton.className = "reserve-button";
+                        reserveButton.id = `reserveButton_${lab.name}_${lab.startTime}_${lab.endTime}`;
                         reserveButton.textContent = "预约";
                         reserveButton.addEventListener("click", function() {
                             reserveExperiment(lab.name, lab.startTime, lab.endTime);
                             reserveButton.disabled = true;
+                            reserveButton.className = "reserved-button";
                             reserveButton.textContent = "已预约";
                         });
                         actionCell.appendChild(reserveButton);
@@ -115,6 +127,38 @@
     
                         table.appendChild(row);
                     });
+                    
+                // Fetch experiment data from the /list API endpoint with reserved=true query parameter
+                fetch("/lab/list?reserved=true", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.status === "success") {
+                        var reservedLabs = data.labs;
+
+                        // Update reserveButton.textContent based on whether the lab is reserved or not
+                        labs.forEach(function(lab) {
+                            var reserveButton = document.getElementById(`reserveButton_${lab.name}_${lab.startTime}_${lab.endTime}`);
+                            if (reservedLabs.some(reservedLab => reservedLab.name === lab.name)) {
+                                reserveButton.textContent = "已预约";
+                                reserveButton.className = "reserved-button";
+                                reserveButton.disabled = true;
+                            }
+                        });
+                    } else {
+                        console.log("Failed to fetch reserved labs data.");
+                    }
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
                 } else {
                     console.log("Failed to fetch experiment data.");
                 }   

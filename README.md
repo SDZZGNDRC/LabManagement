@@ -6,7 +6,7 @@
 
 用于登录, 登录成功后返回一个JWT, 前端需要将该JWT保存在本地, 并在每次请求时将该JWT放在请求头中, 以便后端验证.  
 
-> url: /login  
+> url: /lab/login  
 > Auth: False  
 > method: POST  
 > Request Body:
@@ -30,12 +30,12 @@
 
 ### List
 
-列出所有实验的相关信息, 包括实验名称, 实验开始时间, 实验结束时间.  
+如果URL Query中reserved字段为true, 则返回该学生预约的所有实验的相关信息; 否则列出所有实验的相关信息, 包括实验名称, 实验开始时间, 实验结束时间.  
 
-> url: /list  
+> url: /lab/list  
 > Auth: True  
 > method: GET  
-> URL Query: None  
+> URL Query: reserved=true | false(optional, default is false)  
 > Respond Body:
 
 ```json
@@ -61,11 +61,40 @@
 }
 ```
 
+### LabManage (Only for teachers)
+
+老师管理实验, 包括添加实验, 删除实验.
+
+> url: /lab/labManage  
+> Auth: True  
+> method: POST  
+> Request Body:
+
+```json
+{
+    "action": "Add | Delete",
+    "name": "lab1",
+    "startTime": "xxxxxxx",
+    "endTime": "xxxxxxx",
+}
+```
+
+* **NOTICE**: the time is a timestamp  
+
+> Respond Body:
+
+```json
+{
+    "status": "success",
+    "message": ""
+}
+```
+
 ### Reserve
 
 学生预约实验.
 
-> url: /reserve  
+> url: /lab/reserve  
 > Auth: True  
 > method: POST  
 > Request Body:
@@ -91,7 +120,7 @@
 
 学生打卡签到, URL Query中需要带上token, 用于验证用户身份, 该token由二维码给出.学生签到后, 数据库中Reservations表中对应的记录的Status字段会被置为2, 表示已签到.  
 
-> URL: /punch  
+> URL: /lab/punch  
 > Auth: False  
 > method: POST  
 > URL Query: token=xxxxx  
@@ -114,12 +143,12 @@
 }
 ```
 
-### GenPunchToken
+### GenPunchToken (Only for teachers)
 
 生成签到用到的token, 前端获取到该token后生成二维码, 用于学生签到.
 
-> URL: /genPunchToken  
-> Auth: True (Only for teachers)  
+> URL: /lab/genPunchToken  
+> Auth: True  
 > method: GET  
 > URL Query: lab=lab1  
 > Request Body: None  
@@ -132,12 +161,12 @@
 }
 ```
 
-### GradeSubmit
+### GradeSubmit (Only for teachers)
 
 老师提交成绩.  
 
-> URL: /gradeSubmit  
-> Auth: True(Only for teachers)  
+> URL: /lab/gradeSubmit  
+> Auth: True  
 > method: POST  
 > Request Body:
 
@@ -158,11 +187,58 @@
 }
 ```
 
+### StudentManage (Only for teachers)
+
+老师管理学生, 包括添加学生, 删除学生.
+
+> URL: /lab/studentManage  
+> Auth: True  
+> method: POST  
+> Request Body:  
+
+```json
+{
+    "action": "Add | Delete",
+    "username": "xxxx",
+    "password": "xxxx"
+}
+```
+
+* **NOTICE**: the password is encrypted by `sha256`  
+
+> Respond Body:
+
+```json
+{
+    "status": "success",
+    "message": ""
+}
+```
+
+### ListStudents (Only for teachers)
+
+> URL: /lab/listStudents  
+> Auth: True  
+> method: GET  
+> URL Query: None  
+> Respond Body:  
+
+```json
+{
+    "status": "success",
+    "students": [
+        {
+            "username": "xxxx"
+        }
+    ]
+}
+```
+
 ### QueryScore
 
 查询成绩.
 
-> URL: /queryScore  
+> URL: /lab/queryScore  
 > Auth: True  
 > method: GET  
 > URL Query: username=xxxx&lab=lab1  
@@ -229,7 +305,7 @@
 | 2021211002 | 模电C    | 85   |
 | 2021211002 | 数电A    | 89   |
 
-#### AuthToken
+#### AuthToken(无用)
 
 > 该表为用户登录凭证表，每次登录后后端向前端返回一个JWT, 并在该表中插入
 

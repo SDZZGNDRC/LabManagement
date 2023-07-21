@@ -3,57 +3,76 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>实验教学管理系统 - 学生签到</title>
+    <style>
+        form {
+            text-align: center; 
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 </head>
 <body>
-    <h1>学生签到</h1>
-    <label for="labInput">实验名称:</label>
-    <input type="text" id="labInput" placeholder="实验名称" /><br />
-    <label for="usernameInput">用户名:</label>
-    <input type="text" id="usernameInput" placeholder="用户名" /><br />
-    <label for="passwordInput">密码:</label>
-    <input type="password" id="passwordInput" placeholder="密码" /><br />
-    <button onclick="punchForAttendance()">签到</button>
-    <p id="responseMessage"></p>
-
+    <form id="attendanceForm">
+        <h1 style="text-align:center;">学生签到</h1>
+        <label for="labInput">实验名称: </label>
+        <input type="text" id="labInput" /><br />
+        <label for="usernameInput">学号:</label>
+        <input type="text" id="usernameInput" placeholder="学号" /><br />
+        <label for="passwordInput">密码:</label>
+        <input type="password" id="passwordInput" placeholder="密码" /><br />
+        <button type="submit">签到</button>
+        <p id="responseMessage"></p>
+    </form>
     <script>
-    function getPunchTokenFromURL() {
-        var urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('token');
-    }
-
-    function punchForAttendance() {
-        var labName = document.getElementById("labInput").value;
-        var username = document.getElementById("usernameInput").value;
-        var password = document.getElementById("passwordInput").value;
-        var token = getPunchTokenFromURL();
-
-        var punchData = {
-        lab: labName,
-        username: username,
-        password: password
-        };
-
-        fetch(`/lab/punch?token=${token}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(punchData)
-        })
-        .then(function(response) {
-        return response.json();
-        })
-        .then(function(data) {
-        if (data.status === "success") {
-            document.getElementById("responseMessage").textContent = "签到成功！";
-        } else {
-            document.getElementById("responseMessage").textContent = "签到失败：" + data.message;
+        function getPunchTokenFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('token');
         }
-        })
-        .catch(function(error) {
-        console.log(error);
-        });
-    }
+
+        function sha256(message) {
+            const hash = CryptoJS.SHA256(message);
+            return hash.toString(CryptoJS.enc.Hex);
+        }
+
+        function punchForAttendance(event) {
+            event.preventDefault();
+
+            const labName = document.getElementById("labInput").value;
+            const username = document.getElementById("usernameInput").value;
+            const password = document.getElementById("passwordInput").value;
+            const encryptedPassword = sha256(password);
+            const token = getPunchTokenFromURL();
+
+            const punchData = {
+                lab: labName,
+                username: username,
+                password: encryptedPassword
+            };
+
+            fetch(`/lab/punch?token=${token}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(punchData)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.status === "success") {
+                    document.getElementById("responseMessage").textContent = "签到成功！";
+                } else {
+                    document.getElementById("responseMessage").textContent = "签到失败：" + data.message;
+                }
+                // window.location.href = "/punch?token=" + token;
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+        }
+
+        const attendanceForm = document.getElementById("attendanceForm");
+        attendanceForm.addEventListener("submit", punchForAttendance);
     </script>
 </body>
 </html>

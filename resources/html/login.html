@@ -4,15 +4,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
 
         h1 {
+            text-align: center;
+        }
+
+        h2 {
             text-align: center;
         }
 
@@ -23,17 +20,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 </head>
 <body>
-    <h1>Login</h1>
-
+    <h1>哈威实验教学管理系统</h1>
+    <h2>登录页面</h2>
+    <div style="text-align:center">
+        <select id="userType" text-align="center">
+            <option value="student" selected>学生</option>  
+            <option value="teacher">老师</option>
+        </select>
+    </div><br>
+    
     <form id="loginForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
+        <label for="username">学号: </label>
+        <input type="text" id="username" name="username" required><br>
         
-        <label for="password">Password:</label>
+        <label for="password">密码: </label>
         <input type="password" id="password" name="password" required><br><br>
         
-        <input type="submit" value="Login">
+        <input type="submit" value="登录">
     </form>
+
+
 
     <script>
         function sha256(message) {
@@ -71,6 +77,8 @@
 
                     // Save the token in local storage
                     localStorage.setItem("token", token);
+                    // Save the token in a cookie instead of localStorage
+                    document.cookie = "token=" + token + ";path=/"; 
 
                     // Redirect to the next page or perform any other actions
                     
@@ -83,6 +91,14 @@
                 console.log(error);
                 alert("An error occurred. Please try again later.");
             });
+        });
+
+        document.getElementById("userType").addEventListener("change", function() {
+            if(this.value === "teacher") {
+            document.querySelector("label[for='username']").innerText = "账号: ";
+            } else {
+            document.querySelector("label[for='username']").innerText = "学号: "; 
+            }
         });
     </script>
 </body>

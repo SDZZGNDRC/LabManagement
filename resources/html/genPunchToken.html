@@ -8,12 +8,17 @@
 </head>
 <body>
     <a class="home-link" href="/home">返回首页</a>
-    <h1>生成签到二维码</h1>
-    <label for="labInput">实验名称:</label>
-    <input type="text" id="labInput" placeholder="实验名称" />
-    <button onclick="generateQRCode()">生成二维码</button>
-    <div id="qrcode"></div>
+    <h1 style="text-align: center;">生成签到二维码</h1>
 
+    <div style="text-align: center;">
+        <label for="labInput">实验名称:</label>
+        <!-- TODO: Change the input to the selector -->
+        <input type="text" id="labInput" placeholder="实验名称" />
+        <button onclick="generateQRCode()">生成二维码</button>
+    </div> <br>
+    <div style="display: flex; justify-content: center;">
+        <div id="qrcode"></div>
+    </div>
     <script>
     function generateQRCode() {
         var labName = document.getElementById("labInput").value;

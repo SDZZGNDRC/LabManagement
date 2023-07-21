@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>实验教学管理系统 - 实验管理</title>
+    <style>
+        table {
+            margin: 0 auto;
+            text-align: center;
+        }
+        th, td {
+            padding: 10px;
+        }
+        .delete-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .add-lab {
+            margin: 10px;
+            text-align: center;
+        }
+        .add-lab input {
+            margin-right: 5px;
+        }
+        .add-lab select {
+            margin-right: 5px;
+        }
+        .add-button {
+            background-color: rgb(36, 36, 255);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a class="home-link" href="/home">返回首页</a>
+    <h1 style="text-align: center;">实验管理</h1>
+    <div class="add-lab">
+        <label>实验名称: </label>
+        <input type="text" id="labName" /> <br>
+        <label>开始时间: </label>
+        <input id="startTime" type="datetime-local" value="2023-07-21T00:00" /> <br>
+        <label>结束时间: </label>
+        <input id="endTime" type="datetime-local" value="2023-07-21T00:00" /> <br>
+        <button class="add-button">添加</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>实验名称</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="lab-table-body"></tbody>
+    </table>
+
+    <script>
+        // Function to fetch and populate the lab table
+        function fetchLabs() {
+            fetch(`/lab/list`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const labTableBody = document.getElementById('lab-table-body');
+                    labTableBody.innerHTML = '';
+
+                    data.labs.forEach(lab => {
+                        const row = document.createElement('tr');
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = lab.name;
+                        row.appendChild(nameCell);
+
+                        const startTimeCell = document.createElement('td');
+                        startTimeCell.textContent = formatTimestamp(lab.startTime);
+                        row.appendChild(startTimeCell);
+
+                        const endTimeCell = document.createElement('td');
+                        endTimeCell.textContent = formatTimestamp(lab.endTime);
+                        row.appendChild(endTimeCell);
+
+                        const actionCell = document.createElement('td');
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '删除';
+                        deleteButton.className = 'delete-button';
+                        deleteButton.addEventListener('click', () => deleteLab(lab.name, lab.startTime, lab.endTime));
+                        actionCell.appendChild(deleteButton);
+                        row.appendChild(actionCell);
+
+                        labTableBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Function to add a new lab
+        function addLab() {
+            const labName = document.getElementById('labName').value;
+            const startTime_s = document.getElementById('startTime').value;
+            const endTime_s = document.getElementById('endTime').value;
+
+            var startTime = new Date(startTime_s).getTime() / 1000; 
+            var endTime = new Date(endTime_s).getTime() / 1000;
+
+            fetch('/lab/labManage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    action: 'Add',
+                    name: labName,
+                    startTime: startTime,
+                    endTime: endTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchLabs();
+                    document.getElementById('labName').value = '';
+                    document.getElementById('startTime').value = '2023-07-21T00:00';
+                    document.getElementById('endTime').value = '2023-07-21T00:00';
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Function to delete a lab
+        function deleteLab(name, startTime, endTime) {
+            fetch('/lab/labManage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    action: 'Delete',
+                    name: name,
+                    startTime: startTime,
+                    endTime: endTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchLabs();
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+        }
+
+        // Function to format a timestamp to a human-readable format
+        function formatTimestamp(timestamp) {
+            var date = new Date(timestamp * 1000); // Multiply by 1000 to convert from seconds to milliseconds
+            var formattedDate = date.toLocaleString();
+            return formattedDate;
+        }
+
+        // Add event listener to add button
+        document.querySelector('.add-button').addEventListener('click', addLab);
+
+        // Fetch labs on page load
+        fetchLabs();
+    </script>
+</body>
+</html>

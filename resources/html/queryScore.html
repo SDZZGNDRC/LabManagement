@@ -18,16 +18,18 @@
 </head>
 <body>
     <a class="home-link" href="/home">返回首页</a>
-    <h1>查询成绩</h1>
-    <label for="usernameInput">用户名:</label>
-    <input type="text" id="usernameInput" placeholder="用户名" /><br />
-    <label for="labInput">实验名称:</label>
-    <input type="text" id="labInput" placeholder="实验名称" /><br />
-    <button onclick="queryScores()">查询</button>
+    <h1 style="text-align: center;">查询成绩</h1>
+    <div style="text-align: center;">
+        <label for="usernameInput">学号:</label>
+        <input type="text" id="usernameInput" /><br />
+        <label for="labInput">实验:</label>
+        <input type="text" id="labInput" /><br />
+        <button onclick="queryScores()">查询</button>
+    </div> <br>
     <table id="scoreTable">
     <tr>
         <th>实验</th>
-        <th>用户名</th>
+        <th>学号</th>
         <th>成绩</th>
     </tr>
     </table>
@@ -65,7 +67,7 @@
             table.innerHTML = `
             <tr>
                 <th>实验</th>
-                <th>用户名</th>
+                <th>学号</th>
                 <th>成绩</th>
             </tr>
             `;
@@ -90,6 +92,51 @@
         console.log(error);
         });
     }
+
+    fetch("/lab/queryScore", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem("token"),
+        }
+        })
+        .then(function(response) {
+        return response.json();
+        })
+        .then(function(data) {
+        console.log(data);
+        if (data.status === "success") {
+            var records = data.records;
+            var table = document.getElementById("scoreTable");
+
+            // Clear previous table data
+            table.innerHTML = `
+            <tr>
+                <th>实验</th>
+                <th>学号</th>
+                <th>成绩</th>
+            </tr>
+            `;
+
+            // Populate the table with new data
+            records.forEach(function(record) {
+            var row = table.insertRow();
+            var labCell = row.insertCell();
+            var usernameCell = row.insertCell();
+            var scoreCell = row.insertCell();
+
+            labCell.textContent = record.lab;
+            usernameCell.textContent = record.username;
+            scoreCell.textContent = record.score;
+            });
+        } else {
+            console.log("Failed to query scores.");
+            console.log(data.message);
+        }
+        })
+        .catch(function(error) {
+        console.log(error);
+        });
     </script>
 </body>
 </html>
